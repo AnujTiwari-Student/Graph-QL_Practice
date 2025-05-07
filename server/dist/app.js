@@ -23,19 +23,39 @@ function startServer() {
         const app = (0, express_1.default)();
         const server = new server_1.ApolloServer({
             typeDefs: `
+
+            type User {
+                id: ID!
+                name: String!
+                email: String!
+                phone: String
+            }
+
             type Todo {
                 id: ID!
                 title: String!
                 completed: Boolean!
+                userId: ID!
+                user: User
             }
 
             type Query {
                 getTodos: [Todo]
+                getAllUsers: [User]
+                getUser(id: ID!): User
             }
         `,
             resolvers: {
+                Todo: {
+                    user: (todo) => __awaiter(this, void 0, void 0, function* () { return (yield axios_1.default.get(`https://jsonplaceholder.typicode.com/users/${todo.userId}`)).data; }),
+                },
                 Query: {
-                    getTodos: () => axios_1.default.get('https://jsonplaceholder.typicode.com/todos')
+                    getTodos: () => __awaiter(this, void 0, void 0, function* () { return (yield axios_1.default.get('https://jsonplaceholder.typicode.com/todos')).data; }),
+                    getAllUsers: () => __awaiter(this, void 0, void 0, function* () { return (yield axios_1.default.get('https://jsonplaceholder.typicode.com/users')).data; }),
+                    getUser: (_1, _a) => __awaiter(this, [_1, _a], void 0, function* (_, { id }) {
+                        const response = yield axios_1.default.get(`https://jsonplaceholder.typicode.com/users/${id}`);
+                        return response.data;
+                    }),
                 }
             },
         });
